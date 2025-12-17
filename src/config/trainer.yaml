@@ -1,0 +1,7 @@
+defaults:
+  - data: mnist
+  - model: cnn_classifier
+  - _self_
+
+trainer:
+  epochs: 5

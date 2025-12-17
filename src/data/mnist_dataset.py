@@ -1,6 +1,3 @@
-from enum import Enum
-from typing import LiteralString
-
 from torchvision import transforms
 from torch.utils.data import DataLoader, random_split
 from torchvision.datasets import MNIST

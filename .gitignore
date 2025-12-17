@@ -2,3 +2,7 @@
 .idea/
 **/datasets
 **/*.egg-info
+
+# Hydra folders
+outputs
+multirun
