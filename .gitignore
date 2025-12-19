@@ -3,6 +3,8 @@
 **/datasets
 **/*.egg-info
 
+lightning_logs
+
 # Hydra folders
 outputs
 multirun
