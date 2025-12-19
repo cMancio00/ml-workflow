@@ -1,8 +1,9 @@
 from torchvision import transforms
 from torch.utils.data import DataLoader, random_split
 from torchvision.datasets import MNIST
+import lightning as l
 
-class MNISTDataModule:
+class MNISTDataModule(l.LightningDataModule):
 
     def __init__(self, data_dir: str = "./datasets", batch_size: int = 32, num_workers: int = 4):
         super().__init__()
@@ -17,7 +18,7 @@ class MNISTDataModule:
         self.data_val = None
         self.data_test = None
         self.num_classes = 10
-        self.img_shape = (1, 28, 28)
+        self.shape = (1, 28, 28)
 
     def prepare_data(self):
         MNIST(self.data_dir, train=True, download=True)
@@ -26,6 +27,8 @@ class MNISTDataModule:
     def setup(self, stage: str):
         if stage == "fit":
             mnist_full = MNIST(self.data_dir, train=True, download=True, transform=self.transform)
+            # mnist_full.data = mnist_full.data[:500]
+            # mnist_full.targets = mnist_full.targets[:500]
             self.data_train, self.data_val = random_split(
                 mnist_full, [11/12, 1/12]
             )
