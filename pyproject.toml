@@ -22,5 +22,5 @@ requires = ["setuptools >= 77.0.3"]
 build-backend = "setuptools.build_meta"
 
 [project.scripts]
-train = "train:train"
+train = "trainer:main"
 

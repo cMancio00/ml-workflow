@@ -1,15 +1,16 @@
 import torch
-from data import MNISTDataModule
 from lightning.pytorch import Trainer, seed_everything
 from lightning.pytorch.callbacks import RichProgressBar, EarlyStopping
+import hydra
+from hydra.utils import instantiate
+from omegaconf import DictConfig
 
 from models.classifier import Classifier
-from models.simple_cnn import CnnClassifier
 import optuna
 from optuna import Trial
 from optuna.integration.pytorch_lightning import PyTorchLightningPruningCallback
 
-def objective(trial: Trial):
+def objective(trial: Trial, cfg: DictConfig):
     seed_everything(42, workers=True)
 
     torch.set_float32_matmul_precision('high')
@@ -19,15 +20,16 @@ def objective(trial: Trial):
         high=1e-1,
         log=True
     )
-    batch_size = trial.suggest_categorical('batch_size', [32, 64, 128])
-
 
     model = Classifier(
-        model=CnnClassifier(),
+        model=instantiate(cfg.model),
         lr=lr
     )
 
-    data = MNISTDataModule(batch_size=batch_size)
+    data = instantiate(
+        cfg.data,
+        batch_size = trial.suggest_categorical('batch_size', [32, 64, 128])
+    )
     data.prepare_data()
     data.setup("fit")
     train_dataloader = data.train_dataloader()
@@ -35,7 +37,7 @@ def objective(trial: Trial):
 
     trainer = Trainer(
         enable_model_summary=False,
-        max_epochs=50,
+        max_epochs=cfg.trainer.epochs,
         accelerator='gpu',
         devices=[2],
         callbacks=[
@@ -52,12 +54,12 @@ def objective(trial: Trial):
 
     return trainer.callback_metrics['val_loss'].item()
 
-
-def main():
+@hydra.main(version_base=None, config_path="pkg://config", config_name="trainer")
+def main(cfg: DictConfig):
     study_name = "MNIST"
     storage_name = "sqlite:///{}.db".format(study_name)
     study = optuna.create_study(study_name=study_name, storage=storage_name, load_if_exists=True)
-    study.optimize(objective, n_trials=50, n_jobs=1)
+    study.optimize(lambda trial: objective(trial, cfg), n_trials=50, n_jobs=1)
     print(f"{study.best_trial.number}"
           f"{study.best_value}\n"
           f"{study.best_trial.params}\n")
