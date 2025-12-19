@@ -1,5 +1,3 @@
-from typing import Any
-
 from lightning.pytorch.utilities.types import STEP_OUTPUT
 import lightning as l
 import torch.optim as optim
@@ -11,13 +9,13 @@ import torch.nn.functional as F
 
 class Classifier(l.LightningModule):
 
-    def __init__(self, model: nn.Module):
+    def __init__(self, model: nn.Module, lr: float=1e-3):
         super().__init__()
-        self.save_hyperparameters()
         self.model = model
+        self.save_hyperparameters(ignore=['model'])
 
     def configure_optimizers(self):
-        optimizer = optim.Adam(self.parameters(), lr=1e-4, betas=(0.0, 0.999))
+        optimizer = optim.Adam(self.parameters(), lr=self.hparams.lr, betas=(0.0, 0.999))
         scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.97)
         return [optimizer] , [scheduler]
 
@@ -34,6 +32,7 @@ class Classifier(l.LightningModule):
 
         y = self.model(x)
         loss = F.cross_entropy(y, labels)
+        self.log('val_loss', loss, prog_bar=True)
 
         return loss
 

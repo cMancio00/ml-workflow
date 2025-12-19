@@ -4,6 +4,7 @@
 **/*.egg-info
 
 lightning_logs
+*.db
 
 # Hydra folders
 outputs

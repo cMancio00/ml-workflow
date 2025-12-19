@@ -27,6 +27,8 @@ class MNISTDataModule(l.LightningDataModule):
     def setup(self, stage: str):
         if stage == "fit":
             mnist_full = MNIST(self.data_dir, train=True, download=True, transform=self.transform)
+            # mnist_full.data = mnist_full.data[:500]
+            # mnist_full.targets = mnist_full.targets[:500]
             self.data_train, self.data_val = random_split(
                 mnist_full, [11/12, 1/12]
             )
