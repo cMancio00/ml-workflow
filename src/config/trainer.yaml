@@ -1,7 +1,16 @@
 defaults:
   - data: mnist
   - model: cnn_classifier
+  - optim: adam
+  - callbacks@callbacks:
+      - early_stopping
+      - rich_progress
   - _self_
 
 trainer:
   epochs: 5
+  accelerator: gpu
+  devices: 1
+
+loss:
+  monitor: 'val_loss'
