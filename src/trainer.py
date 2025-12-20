@@ -1,3 +1,5 @@
+import warnings
+
 import torch
 from lightning.pytorch import Trainer, seed_everything
 import hydra
@@ -27,10 +29,16 @@ def objective(trial: Trial, cfg: DictConfig):
 
     cfg.data.batch_size = trial.suggest_categorical('batch_size', [32, 64, 128])
 
-    return train(cfg)
+    return run_train(cfg, trial)
 
-@hydra.main(version_base=None, config_path="pkg://config", config_name="trainer")
-def train(cfg: DictConfig):
+
+def run_train(cfg: DictConfig, trial: Trial | None = None):
+    warnings.filterwarnings(
+        "ignore",
+        category=UserWarning,
+        module="lightning"
+    )
+
     seed_everything(42, workers=True)
 
     torch.set_float32_matmul_precision('high')
@@ -50,6 +58,14 @@ def train(cfg: DictConfig):
 
     callbacks = build_callbacks(cfg)
 
+    if trial:
+        callbacks.append(
+            PyTorchLightningPruningCallback(
+                trial=trial,
+                monitor=cfg.loss.monitor
+            )
+        )
+
     trainer = Trainer(
         enable_model_summary=False,
         max_epochs=cfg.trainer.epochs,
@@ -60,12 +76,14 @@ def train(cfg: DictConfig):
 
     trainer.fit(model, train_dataloader, val_dataloader)
 
-    return trainer.callback_metrics['val_loss'].item()
+    return trainer.callback_metrics[cfg.loss.monitor].item()
 
 @hydra.main(version_base=None, config_path="pkg://config", config_name="trainer")
-def main(cfg: DictConfig):
-    seed_everything(42, workers=True)
+def train(cfg: DictConfig):
+    run_train(cfg)
 
+@hydra.main(version_base=None, config_path="pkg://config", config_name="trainer")
+def hpo(cfg: DictConfig):
     torch.set_float32_matmul_precision('high')
     study_name = "MNIST"
     storage_name = "sqlite:///{}.db".format(study_name)
@@ -74,6 +92,3 @@ def main(cfg: DictConfig):
     print(f"{study.best_trial.number}"
           f"{study.best_value}\n"
           f"{study.best_trial.params}\n")
-
-if __name__ == "__main__":
-    main()
