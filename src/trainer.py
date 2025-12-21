@@ -45,7 +45,7 @@ def run_train(cfg: DictConfig, trial: Trial | None = None):
 
     model = Classifier(
         model=instantiate(cfg.model),
-        lr=cfg.optim.lr
+        optimizer=instantiate(cfg.optim)
     )
 
     data = instantiate(

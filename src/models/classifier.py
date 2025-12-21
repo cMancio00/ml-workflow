@@ -9,13 +9,13 @@ import torch.nn.functional as F
 
 class Classifier(l.LightningModule):
 
-    def __init__(self, model: nn.Module, lr: float=1e-3):
+    def __init__(self, model: nn.Module, optimizer: optim.Optimizer):
         super().__init__()
         self.model = model
         self.save_hyperparameters(ignore=['model'])
 
     def configure_optimizers(self):
-        optimizer = optim.Adam(self.parameters(), lr=self.hparams.lr, betas=(0.0, 0.999))
+        optimizer = self.hparams.optimizer(params=self.parameters())
         scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.97)
         return [optimizer] , [scheduler]
 

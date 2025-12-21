@@ -1,0 +1,6 @@
+_target_: torch.optim.SGD
+_partial_: true
+lr: 1e-3
+momentum: 0
+dampening: 0
+weight_decay: 0
