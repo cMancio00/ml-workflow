@@ -40,8 +40,9 @@ def run_train(cfg: DictConfig, trial: Trial | None = None):
     model = Classifier(model=instantiate(cfg.model), optimizer=instantiate(cfg.optim))
 
     if trial:
-        cls = get_class(cfg.data.module._target_)
-        cfg = cls.hpo(trial, cfg)
+        data_cls = get_class(cfg.data.module._target_)
+        cfg = data_cls.hpo(trial, cfg)
+        del data_cls
 
     data = instantiate(cfg.data.module)
     data.prepare_data()
@@ -82,4 +83,8 @@ def hpo(cfg: DictConfig):
         study_name=study_name, storage=storage_name, load_if_exists=True
     )
     study.optimize(lambda trial: objective(trial, cfg), n_trials=cfg.optuna.trials, n_jobs=1)
-    print(f"{study.best_trial.number}{study.best_value}\n{study.best_trial.params}\n")
+    print(
+        f"{study.best_trial.number}\n"
+        f"{study.best_value}\n"
+        f"{study.best_trial.params}\n"
+    )
