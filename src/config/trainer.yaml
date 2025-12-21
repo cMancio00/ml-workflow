@@ -7,6 +7,9 @@ defaults:
       - rich_progress
   - _self_
 
+seed: 42
+precision: "high"
+
 trainer:
   epochs: 5
   accelerator: gpu
@@ -14,3 +17,7 @@ trainer:
 
 loss:
   monitor: 'val_loss'
+
+optuna:
+  name: ${data.name}
+  trials: 50

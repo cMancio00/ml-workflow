@@ -3,7 +3,7 @@ import warnings
 import torch
 from lightning.pytorch import Trainer, seed_everything
 import hydra
-from hydra.utils import instantiate
+from hydra.utils import instantiate, get_class
 from omegaconf import DictConfig
 from torch import Tensor
 
@@ -27,9 +27,9 @@ def objective(trial: Trial, cfg: DictConfig):
 def run_train(cfg: DictConfig, trial: Trial | None = None):
     warnings.filterwarnings("ignore", category=UserWarning, module="lightning")
 
-    seed_everything(42, workers=True)
+    seed_everything(cfg.seed, workers=True)
 
-    torch.set_float32_matmul_precision("high")
+    torch.set_float32_matmul_precision(cfg.precision)
 
     if trial:
         opt = instantiate(cfg.optim)
@@ -39,7 +39,11 @@ def run_train(cfg: DictConfig, trial: Trial | None = None):
 
     model = Classifier(model=instantiate(cfg.model), optimizer=instantiate(cfg.optim))
 
-    data = instantiate(cfg.data)
+    if trial:
+        cls = get_class(cfg.data.module._target_)
+        cfg = cls.hpo(trial, cfg)
+
+    data = instantiate(cfg.data.module)
     data.prepare_data()
     data.setup("fit")
     train_dataloader = data.train_dataloader()
@@ -55,8 +59,8 @@ def run_train(cfg: DictConfig, trial: Trial | None = None):
     trainer = Trainer(
         enable_model_summary=False,
         max_epochs=cfg.trainer.epochs,
-        accelerator="gpu",
-        devices="1",
+        accelerator=cfg.trainer.accelerator,
+        devices=cfg.trainer.devices,
         callbacks=callbacks,
     )
 
@@ -72,11 +76,10 @@ def train(cfg: DictConfig):
 
 @hydra.main(version_base=None, config_path="pkg://config", config_name="trainer")
 def hpo(cfg: DictConfig):
-    torch.set_float32_matmul_precision("high")
-    study_name = "MNIST"
+    study_name = cfg.optuna.name
     storage_name = "sqlite:///{}.db".format(study_name)
     study = optuna.create_study(
         study_name=study_name, storage=storage_name, load_if_exists=True
     )
-    study.optimize(lambda trial: objective(trial, cfg), n_trials=50, n_jobs=1)
+    study.optimize(lambda trial: objective(trial, cfg), n_trials=cfg.optuna.trials, n_jobs=1)
     print(f"{study.best_trial.number}{study.best_value}\n{study.best_trial.params}\n")
