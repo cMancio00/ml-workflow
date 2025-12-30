@@ -1,0 +1,7 @@
+_target_: models.classifier.Classifier
+_partial_: true
+
+net:
+  _target_: models.components.simple_cnn.CnnNet
+  in_channels: 1
+  out_channels: 10

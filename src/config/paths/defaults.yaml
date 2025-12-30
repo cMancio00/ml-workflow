@@ -4,7 +4,7 @@
 root_dir: .
 
 # path to data directory
-data_dir: ${paths.root_dir}/data/
+data_dir: ${paths.root_dir}/datasets/
 
 # path to reference data directory
 reference_data_dir: ${paths.root_dir}/data/reference

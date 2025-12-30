@@ -1,16 +1,15 @@
-from lightning.pytorch.utilities.types import STEP_OUTPUT
 import lightning as l
-import torch.optim as optim
-from torch import nn
-from torch import Tensor
 import torch.nn.functional as F
+import torch.optim as optim
+from lightning.pytorch.utilities.types import STEP_OUTPUT
+from torch import Tensor, nn
 
 
 class Classifier(l.LightningModule):
-    def __init__(self, model: nn.Module, optimizer: optim.Optimizer):
+    def __init__(self, net: nn.Module, optimizer: optim.Optimizer):
         super().__init__()
-        self.model = model
-        self.save_hyperparameters(ignore=["model"])
+        self.net = net
+        self.save_hyperparameters(ignore=["net"])
 
     def configure_optimizers(self):
         optimizer = self.hparams.optimizer(params=self.parameters())
@@ -20,7 +19,7 @@ class Classifier(l.LightningModule):
     def training_step(self, batch: Tensor) -> STEP_OUTPUT:
         x, labels = batch
 
-        y = self.model(x)
+        y = self.net(x)
         loss = F.cross_entropy(y, labels)
 
         return loss
@@ -28,7 +27,7 @@ class Classifier(l.LightningModule):
     def validation_step(self, batch: Tensor) -> STEP_OUTPUT:
         x, labels = batch
 
-        y = self.model(x)
+        y = self.net(x)
         loss = F.cross_entropy(y, labels)
         self.log("val_loss", loss, prog_bar=True)
 

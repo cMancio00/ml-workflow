@@ -1,6 +1,6 @@
 defaults:
   - data: mnist
-  - model: cnn_classifier
+  - model: classifier
   - optim: adam
   - hydra: defaults
   - paths: defaults
@@ -8,7 +8,6 @@ defaults:
   - callbacks@callbacks:
       - early_stopping
       - rich_progress
-
   - experiment: null
   - _self_
 
@@ -24,6 +23,3 @@ trainer:
 loss:
   monitor: 'val_loss'
 
-optuna:
-  name: ${data.name}
-  trials: 50

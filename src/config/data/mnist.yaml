@@ -1,5 +1,5 @@
 _target_: data.mnist_dataset.MNISTDataModule
-data_dir: datasets
+data_dir: ${paths.data_dir}
 batch_size: 32
 num_workers: 4
 samples: -1

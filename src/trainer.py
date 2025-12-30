@@ -1,19 +1,20 @@
 import warnings
 
-import torch
-from lightning.pytorch import Trainer, seed_everything
 import hydra
+import torch
 from hydra.utils import instantiate
+from lightning import Callback
+from lightning.pytorch import Trainer, seed_everything
 from omegaconf import DictConfig
 
-from models.classifier import Classifier
 
-def build_callbacks(cfg: DictConfig):
+def build_callbacks(cfg: DictConfig) -> list[Callback] | None:
     if "callbacks" not in cfg:
         return None
     return [instantiate(cb) for cb in cfg.callbacks.values()]
 
-@hydra.main(version_base=None, config_path="pkg://config", config_name="trainer")
+
+@hydra.main(version_base=None, config_path="pkg://config", config_name="train")
 def train(cfg: DictConfig):
     warnings.filterwarnings("ignore", category=UserWarning, module="lightning")
 
@@ -21,7 +22,10 @@ def train(cfg: DictConfig):
 
     torch.set_float32_matmul_precision(cfg.precision)
 
-    model = Classifier(model=instantiate(cfg.model), optimizer=instantiate(cfg.optim))
+    model = instantiate(cfg.model)
+
+    model = model(net=instantiate(cfg.model.net), optimizer=instantiate(cfg.optim))
+    # model = Classifier(model=instantiate(cfg.model), optimizer=instantiate(cfg.optim))
 
     data = instantiate(cfg.data)
     data.prepare_data()
@@ -30,7 +34,6 @@ def train(cfg: DictConfig):
     val_dataloader = data.val_dataloader()
 
     callbacks = build_callbacks(cfg)
-
 
     trainer = Trainer(
         enable_model_summary=False,
