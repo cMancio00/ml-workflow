@@ -6,6 +6,7 @@
 lightning_logs
 *.db
 logs
+*.log
 
 # Hydra folders
 outputs
