@@ -24,8 +24,10 @@ def train(cfg: DictConfig):
 
     model = instantiate(cfg.model)
 
-    model = model(net=instantiate(cfg.model.net), optimizer=instantiate(cfg.optim))
-    # model = Classifier(model=instantiate(cfg.model), optimizer=instantiate(cfg.optim))
+    # model = model(net=instantiate(cfg.model.net), optimizer=instantiate(cfg.optim))
+    model = model(optim=instantiate(cfg.optim))
+    opts, _ = model.configure_optimizers()
+    print(opts[0])
 
     data = instantiate(cfg.data)
     data.prepare_data()

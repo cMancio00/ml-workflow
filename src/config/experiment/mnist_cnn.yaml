@@ -5,10 +5,8 @@
 
 defaults:
   - override /data: mnist
-  - override /optim: adam
-  - override /model: cnn_classifier
-
-
+  - override /optim: sgd
+  - override /model: classifier
 
 # all parameters below will be merged with parameters from default configurations set above
 # this allows you to overwrite only specified parameters
@@ -17,4 +15,4 @@ data:
   batch_size: 1
 
 optim:
-  weight_decay: 2
+  momentum: 2

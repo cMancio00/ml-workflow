@@ -5,6 +5,9 @@
 
 defaults:
   - override /hydra/sweeper: optuna
+  - override /data: mnist
+  - override /optim: adam
+  - override /model: classifier
 
 optimized_metric: ${loss.monitor}
 
@@ -45,4 +48,3 @@ hydra:
     params:
       data.batch_size: choice(1, 16, 32)
       optim.lr: range(1e-4, 1e-3)
-      optim.eps: choice(1e-8, 1e-7)
