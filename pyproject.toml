@@ -26,4 +26,5 @@ build-backend = "setuptools.build_meta"
 [project.scripts]
 hpo = "trainer:hpo"
 train = "trainer:train"
+search = "trainer:search"
 

@@ -2,17 +2,23 @@ defaults:
   - data: mnist
   - model: cnn_classifier
   - optim: adam
+  - hydra: defaults
+  - paths: defaults
+  - hparam_search: defaults
   - callbacks@callbacks:
       - early_stopping
       - rich_progress
+
+  - experiment: null
   - _self_
 
+task_name: "train"
 seed: 42
 precision: "high"
 
 trainer:
   epochs: 5
-  accelerator: gpu
+  accelerator: cpu
   devices: 1
 
 loss:

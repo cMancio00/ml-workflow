@@ -1,12 +1,5 @@
-module:
-  _target_: data.mnist_dataset.MNISTDataModule
-  data_dir: datasets
-  batch_size: 32
-  num_workers: 4
-  samples: -1
-
-name: mnist
-
-optuna:
-  min_exp: 5
-  max_exp: 8
+_target_: data.mnist_dataset.MNISTDataModule
+data_dir: datasets
+batch_size: 32
+num_workers: 4
+samples: -1
