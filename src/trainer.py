@@ -1,68 +1,90 @@
+import warnings
+
 import torch
 from lightning.pytorch import Trainer, seed_everything
-from lightning.pytorch.callbacks import RichProgressBar, EarlyStopping
 import hydra
-from hydra.utils import instantiate
+from hydra.utils import instantiate, get_class
 from omegaconf import DictConfig
+from torch import Tensor
 
 from models.classifier import Classifier
 import optuna
 from optuna import Trial
 from optuna.integration.pytorch_lightning import PyTorchLightningPruningCallback
+from utils.optim_search_space import optim_hpo
+
+
+def build_callbacks(cfg: DictConfig):
+    if "callbacks" not in cfg:
+        return None
+    return [instantiate(cb) for cb in cfg.callbacks.values()]
+
 
 def objective(trial: Trial, cfg: DictConfig):
-    seed_everything(42, workers=True)
+    return run_train(cfg, trial)
 
-    torch.set_float32_matmul_precision('high')
-    lr = trial.suggest_float(
-        name='lr',
-        low=1e-4,
-        high=1e-1,
-        log=True
-    )
 
-    model = Classifier(
-        model=instantiate(cfg.model),
-        lr=lr
-    )
+def run_train(cfg: DictConfig, trial: Trial | None = None):
+    warnings.filterwarnings("ignore", category=UserWarning, module="lightning")
 
-    data = instantiate(
-        cfg.data,
-        batch_size = trial.suggest_categorical('batch_size', [32, 64, 128])
-    )
+    seed_everything(cfg.seed, workers=True)
+
+    torch.set_float32_matmul_precision(cfg.precision)
+
+    if trial:
+        opt = instantiate(cfg.optim)
+        opt = opt(params=[Tensor([0])])
+        cfg = optim_hpo(opt, trial=trial, cfg=cfg)
+        del opt
+
+    model = Classifier(model=instantiate(cfg.model), optimizer=instantiate(cfg.optim))
+
+    if trial:
+        data_cls = get_class(cfg.data.module._target_)
+        cfg = data_cls.hpo(trial, cfg)
+        del data_cls
+
+    data = instantiate(cfg.data.module)
     data.prepare_data()
     data.setup("fit")
     train_dataloader = data.train_dataloader()
     val_dataloader = data.val_dataloader()
 
+    callbacks = build_callbacks(cfg)
+
+    if trial:
+        callbacks.append(
+            PyTorchLightningPruningCallback(trial=trial, monitor=cfg.loss.monitor)
+        )
+
     trainer = Trainer(
         enable_model_summary=False,
         max_epochs=cfg.trainer.epochs,
-        accelerator='gpu',
-        devices=[2],
-        callbacks=[
-            RichProgressBar(leave=False),
-            PyTorchLightningPruningCallback(trial, monitor='val_loss'),
-            EarlyStopping(
-                'val_loss',
-                patience=2
-            )
-        ]
+        accelerator=cfg.trainer.accelerator,
+        devices=cfg.trainer.devices,
+        callbacks=callbacks,
     )
 
     trainer.fit(model, train_dataloader, val_dataloader)
 
-    return trainer.callback_metrics['val_loss'].item()
+    return trainer.callback_metrics[cfg.loss.monitor].item()
+
 
 @hydra.main(version_base=None, config_path="pkg://config", config_name="trainer")
-def main(cfg: DictConfig):
-    study_name = "MNIST"
-    storage_name = "sqlite:///{}.db".format(study_name)
-    study = optuna.create_study(study_name=study_name, storage=storage_name, load_if_exists=True)
-    study.optimize(lambda trial: objective(trial, cfg), n_trials=50, n_jobs=1)
-    print(f"{study.best_trial.number}"
-          f"{study.best_value}\n"
-          f"{study.best_trial.params}\n")
+def train(cfg: DictConfig):
+    run_train(cfg)
 
-if __name__ == "__main__":
-    main()
+
+@hydra.main(version_base=None, config_path="pkg://config", config_name="trainer")
+def hpo(cfg: DictConfig):
+    study_name = cfg.optuna.name
+    storage_name = "sqlite:///{}.db".format(study_name)
+    study = optuna.create_study(
+        study_name=study_name, storage=storage_name, load_if_exists=True
+    )
+    study.optimize(lambda trial: objective(trial, cfg), n_trials=cfg.optuna.trials, n_jobs=1)
+    print(
+        f"{study.best_trial.number}\n"
+        f"{study.best_value}\n"
+        f"{study.best_trial.params}\n"
+    )
