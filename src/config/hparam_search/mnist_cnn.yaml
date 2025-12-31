@@ -1,7 +1,7 @@
 # @package _global_
 
 # example hyperparameter optimization with Optuna:
-# train -m hparams_search=mnist_cnn
+# train +hparams_search=mnist_cnn
 
 defaults:
   - override /hydra/sweeper: optuna

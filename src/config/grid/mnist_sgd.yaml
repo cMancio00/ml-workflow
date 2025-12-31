@@ -1,13 +1,13 @@
 # @package _global_
 
 # example of grid search:
-# train grid=mnist_sgd
+# train +grid=mnist_sgd
 
 defaults:
+  - override /data: mnist
   - override /model: classifier
   - override /model/net: cnn
   - override /optim: sgd
-  - override /data: mnist
 
 hydra:
   mode: "MULTIRUN" # set hydra to multirun by default if this config is attached

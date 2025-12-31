@@ -1,7 +1,7 @@
 # @package _global_
 
 # to execute this experiment run:
-# train experiment=mnist_cnn
+# train +experiment=mnist_cnn
 
 defaults:
   - override /data: mnist
@@ -16,4 +16,4 @@ data:
   batch_size: 1
 
 optim:
-  momentum: 2
+  lr: 1e-1

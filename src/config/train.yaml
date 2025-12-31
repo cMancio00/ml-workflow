@@ -2,10 +2,7 @@ defaults:
   # Hydra configs
   - hydra: defaults
   - paths: defaults
-  # Experimets configuration
-  - experiment: null
-  - grid: null
-  - hparam_search: null
+
   # Defaults callbacks, can be added with:
   # train +callbacks=model_checkpoint
   - callbacks@callbacks:
@@ -17,7 +14,6 @@ defaults:
   - data: mnist
   - model: classifier
   - optim: adam
-  - override model/net: cnn
   - _self_
 
 task_name: "train"
