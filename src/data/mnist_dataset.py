@@ -1,6 +1,4 @@
 import lightning as l
-from omegaconf import DictConfig
-from optuna import Trial
 from torch.utils.data import DataLoader, random_split
 from torchvision import transforms
 from torchvision.datasets import MNIST
