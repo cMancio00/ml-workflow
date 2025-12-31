@@ -1,13 +1,14 @@
 # @package _global_
 
-# example hyperparameter optimization of some experiment with Optuna:
-# python train.py -m hparams_search=mnist_optuna experiment=example
+# example hyperparameter optimization with Optuna:
+# train -m hparams_search=mnist_cnn
 
 defaults:
   - override /hydra/sweeper: optuna
   - override /data: mnist
   - override /optim: adam
   - override /model: classifier
+  - override /model/net: cnn
 
 optimized_metric: ${loss.monitor}
 
@@ -25,19 +26,19 @@ hydra:
     storage: "sqlite:///mnist.db"
 
     # name of the study to persist optimization results
-    study_name: "mnist_cnn_adam"
+    study_name: "mnist_cnn"
 
     # number of parallel workers
     n_jobs: 1
 
     # 'minimize' or 'maximize' the objective
-    direction: minimize
+    direction: 'minimize'
 
     # total number of runs that will be executed
     n_trials: 20
 
     # choose Optuna hyperparameter sampler
-    # you can choose bayesian sampler (tpe), random search (without optimization), grid sampler, and others
+    # you can choose bayesian sampler (tpe), other samplers don't work
     # docs: https://optuna.readthedocs.io/en/stable/reference/samplers.html
     sampler:
       _target_: optuna.samplers.TPESampler

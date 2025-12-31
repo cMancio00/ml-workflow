@@ -1,0 +1,20 @@
+# @package _global_
+
+# example of grid search:
+# train grid=mnist_sgd
+
+defaults:
+  - override /model: classifier
+  - override /model/net: cnn
+  - override /optim: sgd
+  - override /data: mnist
+
+hydra:
+  mode: "MULTIRUN" # set hydra to multirun by default if this config is attached
+
+  sweeper:
+
+    # define hyperparameter search space
+    params:
+      data.batch_size: 16, 32
+      optim.lr: 1e-1
