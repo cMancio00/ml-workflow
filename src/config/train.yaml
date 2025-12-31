@@ -8,7 +8,7 @@ defaults:
   - callbacks@callbacks:
       - early_stopping
       - rich_progress
-  - trainer: defaults
+  - trainer: default
 
   # Data and model defaults
   - data: mnist
