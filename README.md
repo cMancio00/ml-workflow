@@ -156,7 +156,7 @@ hydra:
       optim.lr: range(1e-4, 1e-3)
 ```
 
-To run a optimization use `+hparam_search=` syntax
+To run an optimization use `+hparam_search=` syntax
 
 ```bash
 train +hparam_search=mnist_cnn
