@@ -1,7 +1,7 @@
 from torch import nn
 
 
-class CnnClassifier(nn.Module):
+class CnnNet(nn.Module):
     def __init__(self, in_channels: int = 1, out_channels: int = 10):
         super().__init__()
 

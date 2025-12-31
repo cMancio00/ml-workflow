@@ -1,0 +1,24 @@
+defaults:
+  # Hydra configs
+  - hydra: defaults
+  - paths: defaults
+
+  # Defaults callbacks, can be added with:
+  # train +callbacks=model_checkpoint
+  - callbacks@callbacks:
+      - early_stopping
+      - rich_progress
+  - trainer: default
+
+  # Data and model defaults
+  - data: mnist
+  - model: classifier
+  - optim: adam
+  - _self_
+
+task_name: "train"
+seed: 42
+
+loss:
+  monitor: 'val_loss'
+

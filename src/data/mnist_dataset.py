@@ -1,14 +1,16 @@
-from omegaconf import DictConfig
-from optuna import Trial
-from torchvision import transforms
-from torch.utils.data import DataLoader, random_split
-from torchvision.datasets import MNIST
 import lightning as l
+from torch.utils.data import DataLoader, random_split
+from torchvision import transforms
+from torchvision.datasets import MNIST
 
 
 class MNISTDataModule(l.LightningDataModule):
     def __init__(
-        self, data_dir: str = "./datasets", batch_size: int = 32, num_workers: int = 4, samples: int = -1
+        self,
+        data_dir: str = "./datasets",
+        batch_size: int = 32,
+        num_workers: int = 4,
+        samples: int = -1,
     ):
         super().__init__()
         self.data_dir = data_dir
@@ -33,8 +35,8 @@ class MNISTDataModule(l.LightningDataModule):
             mnist_full = MNIST(
                 self.data_dir, train=True, download=True, transform=self.transform
             )
-            mnist_full.data = mnist_full.data[:self.samples]
-            mnist_full.targets = mnist_full.targets[:self.samples]
+            mnist_full.data = mnist_full.data[: self.samples]
+            mnist_full.targets = mnist_full.targets[: self.samples]
             self.data_train, self.data_val = random_split(mnist_full, [11 / 12, 1 / 12])
         if stage == "test":
             self.data_test = MNIST(
@@ -60,10 +62,3 @@ class MNISTDataModule(l.LightningDataModule):
         return DataLoader(
             self.data_test, batch_size=self.batch_size, num_workers=self.num_workers
         )
-
-    @staticmethod
-    def hpo(trial: Trial, cfg: DictConfig) -> DictConfig:
-        cfg.data.module.batch_size = trial.suggest_categorical(
-            "batch_size", [2**i for i in range(cfg.data.optuna.min_exp, cfg.data.optuna.max_exp)]
-        )
-        return cfg
