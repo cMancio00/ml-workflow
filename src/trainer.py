@@ -1,7 +1,6 @@
 import warnings
 
 import hydra
-import torch
 from hydra.utils import instantiate
 from lightning import Callback
 from lightning.pytorch import Trainer, seed_everything
@@ -20,11 +19,8 @@ def train(cfg: DictConfig):
 
     seed_everything(cfg.seed, workers=True)
 
-    torch.set_float32_matmul_precision(cfg.precision)
-
     model = instantiate(cfg.model)
 
-    # model = model(net=instantiate(cfg.model.net), optimizer=instantiate(cfg.optim))
     model = model(optim=instantiate(cfg.optim))
     opts, _ = model.configure_optimizers()
     print(opts[0])
@@ -37,13 +33,7 @@ def train(cfg: DictConfig):
 
     callbacks = build_callbacks(cfg)
 
-    trainer = Trainer(
-        enable_model_summary=False,
-        max_epochs=cfg.trainer.epochs,
-        accelerator=cfg.trainer.accelerator,
-        devices=cfg.trainer.devices,
-        callbacks=callbacks,
-    )
+    trainer: Trainer = instantiate(cfg.trainer, callbacks=callbacks)
 
     trainer.fit(model, train_dataloader, val_dataloader)
 

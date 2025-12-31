@@ -11,6 +11,7 @@ defaults:
   - callbacks@callbacks:
       - early_stopping
       - rich_progress
+  - trainer: defaults
 
   # Data and model defaults
   - data: mnist
@@ -21,12 +22,6 @@ defaults:
 
 task_name: "train"
 seed: 42
-precision: "high"
-
-trainer:
-  epochs: 5
-  accelerator: cpu
-  devices: 1
 
 loss:
   monitor: 'val_loss'

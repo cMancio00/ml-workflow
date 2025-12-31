@@ -1,0 +1,5 @@
+defauts:
+  - defaults
+
+accelerator: gpu
+devices: 1
