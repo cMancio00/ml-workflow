@@ -1,0 +1,7 @@
+model_checkpoint:
+  _target_: lightning.pytorch.callbacks.ModelCheckpoint
+  dirpath: ${paths.output_dir}/checkpoints
+  filename: "epoch_{epoch:03d}"
+  monitor: ${loss.monitor}
+  mode: min
+  save_top_k: 1

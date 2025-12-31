@@ -1,0 +1,19 @@
+# @package _global_
+
+# to execute this experiment run:
+# train +experiment=mnist_cnn
+
+defaults:
+  - override /data: mnist
+  - override /optim: sgd
+  - override /model: classifier
+  - override /model/net: cnn
+
+# all parameters below will be merged with parameters from default configurations set above
+# this allows you to overwrite only specified parameters
+
+data:
+  batch_size: 1
+
+optim:
+  lr: 1e-1

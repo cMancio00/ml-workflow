@@ -1,0 +1,6 @@
+defaults:
+  - net: cnn
+  - /optim: adam
+
+_target_: models.classifier.Classifier
+_partial_: true
