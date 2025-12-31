@@ -1,6 +1,6 @@
-import warnings
+from warnings import filterwarnings
 
-import hydra
+from hydra import main
 from hydra.utils import instantiate
 from lightning import Callback
 from lightning.pytorch import Trainer, seed_everything
@@ -13,17 +13,15 @@ def build_callbacks(cfg: DictConfig) -> list[Callback] | None:
     return [instantiate(cb) for cb in cfg.callbacks.values()]
 
 
-@hydra.main(version_base=None, config_path="pkg://config", config_name="train")
+@main(version_base=None, config_path="pkg://config", config_name="train")
 def train(cfg: DictConfig):
-    warnings.filterwarnings("ignore", category=UserWarning, module="lightning")
+    filterwarnings("ignore", category=UserWarning, module="lightning")
 
     seed_everything(cfg.seed, workers=True)
 
     model = instantiate(cfg.model)
 
     model = model(optim=instantiate(cfg.optim))
-    opts, _ = model.configure_optimizers()
-    print(opts[0])
 
     data = instantiate(cfg.data)
     data.prepare_data()
