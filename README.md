@@ -32,6 +32,20 @@ The entry point is `train`, to start training use:
 train
 ```
 
+## Shell Completions
+
+**Bash - Install**:
+
+```bash
+eval "$(train -sc install=bash)"
+```
+
+**Bash - Uninstall**:
+
+```bash
+eval "$(train -sc uninstall=bash)"
+```
+
 ## Configure an Experiment
 
 An experiment can be declared in `src/config/experiment`.
@@ -41,7 +55,7 @@ To run the experiment use `+experiment=` syntax.
 train +experiement=mnist_cnn
 ```
 
-> **Note**
+> [!NOTE]
 > You can still perform overriding of the hyperparameters
 
 ## Use Grid Search
@@ -142,5 +156,5 @@ hydra:
       optim.lr: range(1e-4, 1e-3)
 ```
 
-> **Warning**
+> [!WARNING]
 > Pruning is not availabel with the hydra-sweeper
