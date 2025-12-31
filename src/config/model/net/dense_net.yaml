@@ -1,0 +1,4 @@
+_target_: models.components.simple_dense_net.SimpleDenseNet
+input_size: 784
+hidden_size: 256
+output_size: 10
